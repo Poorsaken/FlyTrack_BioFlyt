@@ -1,6 +1,7 @@
-import { Text, View } from "react-native";
+import React from "react";
+import { Button, Text, View } from "react-native";
 
-export default function Index() {
+export default function Index({ navigation }: any) {
   return (
     <View
       style={{
@@ -9,9 +10,9 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text className="text-5xl text-blue-700">
-        Expo + Nativewind
-      </Text>
+      <Text className="text-5xl text-blue-700">Expo + Nativewind</Text>
+
+      <Button title="GO TO LOGIN" onPress={()=> navigation.navigate('Login')} />
     </View>
   );
 }

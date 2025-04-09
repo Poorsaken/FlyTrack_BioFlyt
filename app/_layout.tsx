@@ -1,40 +1,21 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-// import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-// import { useEffect } from 'react';
-import 'react-native-reanimated';
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+import Index from "./index"; // Import the Index component
+import LoginScreen from "./Login/login"; // Import your Login screen
 
-// import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-// SplashScreen.preventAutoHideAsync();
+const Stack = createStackNavigator();
 
 export default function RootLayout() {
-  // const colorScheme = useColorScheme();
-  // const [loaded] = useFonts({
-  //   SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  // });
-
-  // useEffect(() => {
-  //   if (loaded) {
-  //     SplashScreen.hideAsync();
-  //   }
-  // }, [loaded]);
-
-  // if (!loaded) {
-  //   return null;
-  // }
-
   return (
-    // <ThemeProvider value={DefaultTheme}>
-    <Stack
+    <Stack.Navigator
       screenOptions={{
-        'headerShown': false
+        headerShown: false,
+        animation:'fade'
       }}
     >
-      <Stack.Screen name='index' />
-    </Stack>
-    // </ThemeProvider>
+
+      <Stack.Screen name="index" component={Index} />
+      <Stack.Screen name="Login" component={LoginScreen} />
+    </Stack.Navigator>
   );
 }
