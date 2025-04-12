@@ -27,6 +27,7 @@
         <data android:scheme="myapp"/>
         <data android:scheme="com.poorsaken.myapp"/>
       </intent-filter>
+      
     </activity>
   </application>
 </manifest>
