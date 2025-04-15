@@ -4,7 +4,7 @@ import * as ScreenOrientation from "expo-screen-orientation";
 import axios from "axios";
 import { useApiUrl } from "../../UserContext/API"; // Adjust the import path as necessary
 
-const LoginScreen = ({ navigation }: any) => {
+const LoginScreen = ({ navigation}: any) => {
   const apiUrl = useApiUrl();
 
   const [email, setEmail] = useState("");
@@ -19,35 +19,37 @@ const LoginScreen = ({ navigation }: any) => {
     };
   }, []);
 
-  const handleLogin = async () => {
-    // show loading modal
-    setLoading(true); 
-    try {
-      const response = await axios.post(`${apiUrl}/api/auth/login`, {
-        email,
-        password,
-      });
+ const handleLogin = async () => {
+   // Show loading modal
+   setLoading(true);
+   try {
+     const response = await axios.post(`${apiUrl}/api/auth/login`, {
+       email,
+       password,
+     });
 
-      if (response.status === 200) {
-        const userData = response.data;
-        console.log("Login Successful:", response.data);
+     if (response.status === 200) {
+       const userData = response.data;
+       console.log("Login Successful:", userData);
 
-        setLoading(false); 
+       setLoading(false);
 
-        if (userData.user.role === 2) {
-          navigation.navigate("Secretary", { userData });
-        } else {
-          navigation.navigate("Employee", { userData });
-        }
-      } else {
-        console.log("Unexpected response:", response.data);
-        setLoading(false); 
-      }
-    } catch (err) {
-      console.log("Error", err);
-      setLoading(false); 
-    }
-  };
+       // Update login state and navigate to the appropriate screen
+
+       if (userData.user.role === 2) {
+         navigation.navigate("Secretary", { userData });
+       } else {
+         navigation.navigate("Employee", { userData });
+       }
+     } else {
+       console.log("Unexpected response:", response.data);
+       setLoading(false);
+     }
+   } catch (err) {
+     console.log("Error", err);
+     setLoading(false);
+   }
+ };
 
   return (
     <SafeAreaView className="flex-1 justify-center items-center">
