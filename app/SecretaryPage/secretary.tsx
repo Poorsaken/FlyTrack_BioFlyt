@@ -3,30 +3,26 @@ import {
   View,
   Text,
   SafeAreaView,
-  FlatList,
   TouchableOpacity,
+  Image,
+  ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { useApiUrl } from "../../UserContext/API";
-import { Button } from "@react-navigation/elements";
 import axios from "axios";
 
 const SecretaryPage = ({ navigation, route }: any) => {
   const apiUrl = useApiUrl();
   const { userData } = route.params || {};
-  console.log("userData:", userData);
-
-  useEffect(() => {
-    if (!userData) {
-      console.log("No userData provided");
-      navigation.navigate("Login"); // Redirect to Login if userData is missing
-    }
-  }, [userData]);
 
   interface Employee {
     id: number;
     firstname: string;
+    surname: string;
     email: string;
+    jobTitle: string;
+    employee_id: string;
   }
 
   const [employeedata, setEmployeeData] = useState<Employee[]>([]);
@@ -34,7 +30,8 @@ const SecretaryPage = ({ navigation, route }: any) => {
 
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-    fetchEmployee(); // Load employee data
+    fetchEmployee();
+
     return () => {
       ScreenOrientation.unlockAsync();
     };
@@ -43,34 +40,19 @@ const SecretaryPage = ({ navigation, route }: any) => {
   const fetchEmployee = async () => {
     try {
       const response = await axios.get(`${apiUrl}/api/users/employees`);
-      console.log("employee:", response.data);
       setEmployeeData(response.data);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to fetch employees:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const renderItem = ({ item }: any) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("secondscreen", { employee: item })}
-    >
-      <View className="p-4 border-b border-gray-300">
-        <Text className="text-lg font-bold text-blue-500">
-          {item.firstname}
-        </Text>
-        <Text className="text-gray-500">{item.email}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
   if (!userData) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center">
-        <Text className="text-lg text-red-500">
-          Error: User data is missing
-        </Text>
+      <SafeAreaView className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text className="text-lg text-gray-600 mt-4">Loading user data...</Text>
       </SafeAreaView>
     );
   }
@@ -78,22 +60,54 @@ const SecretaryPage = ({ navigation, route }: any) => {
   return (
     <SafeAreaView className="flex-1">
       <View className="flex-1 flex-row bg-white">
-        <Button onPress={() => navigation.openDrawer()}>Open drawer</Button>
-        <View className="flex-1">
-          <Text className="text-xl font-bold p-4">Employee List</Text>
+        <TouchableOpacity onPress={() => navigation.openDrawer()}>
+          <Image
+            className="w-10 h-10 m-2"
+            source={require("../../assets/images/menu-bar.png")}
+          />
+        </TouchableOpacity>
 
-          <Text>Welcome, {userData?.user?.email}</Text>
-          
+        <View className="flex-1">
+          <Text className="text-xl font-bold p-4">Employee Attendance</Text>
+
           {loading ? (
             <Text className="text-center text-gray-500">
               Loading employees...
             </Text>
           ) : (
-            <FlatList
-              data={employeedata}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.id.toString()}
-            />
+            <ScrollView
+              contentContainerStyle={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                justifyContent: "space-between",
+                paddingBottom: 16,
+              }}
+            >
+              {employeedata.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  onPress={() =>
+                    navigation.navigate("secondscreen", { employee: item })
+                  }
+                  className="bg-red-400 rounded-lg m-2 shadow-md w-[30%] aspect-square"
+                >
+                  <View className="flex-1 items-start justify-center mb-2 rounded-lg bg-orange-300">
+                    {/* Optional icon or image here */}
+                  </View>
+                  <View className="flex-1 justify-center p-4">
+                    <Text className="text-lg font-normal text-gray-800">
+                      Employee ID: {item.employee_id}
+                    </Text>
+                    <Text className="text-lg font-bold text-blue-500">
+                      Name: {item.firstname} {item.surname}
+                    </Text>
+                    <Text className="text-sm text-gray-600">
+                      Job Title: {item.jobTitle}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           )}
         </View>
       </View>

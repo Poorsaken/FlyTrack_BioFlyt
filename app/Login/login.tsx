@@ -4,7 +4,7 @@ import * as ScreenOrientation from "expo-screen-orientation";
 import axios from "axios";
 import { useApiUrl } from "../../UserContext/API"; // Adjust the import path as necessary
 
-const LoginScreen = ({ navigation}: any) => {
+const LoginScreen = ({ navigation, setIsLoggedIn, setUserRole }: any) => {
   const apiUrl = useApiUrl();
 
   const [email, setEmail] = useState("");
@@ -19,48 +19,51 @@ const LoginScreen = ({ navigation}: any) => {
     };
   }, []);
 
- const handleLogin = async () => {
-   // Show loading modal
-   setLoading(true);
-   try {
-     const response = await axios.post(`${apiUrl}/api/auth/login`, {
-       email,
-       password,
-     });
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post(`${apiUrl}/api/auth/login`, {
+        email,
+        password,
+      });
 
-     if (response.status === 200) {
-       const userData = response.data;
-       console.log("Login Successful:", userData);
+      if (response.status === 200) {
+        const userData = response.data;
+        console.log("Login Successful:", userData);
 
-       setLoading(false);
+        const role = userData.user.role;
+        setUserRole(role); // Store role (if used globally)
+        setIsLoggedIn(true); // Mark as logged in
+        setLoading(false); // Stop loading spinner
 
-       // Update login state and navigate to the appropriate screen
+        // 👇 Navigate based on role
+        if (role === 2) {
+          navigation.navigate("Secretary", { userData });
+        } else if (role === 1) {
+          navigation.navigate("Employee", { userData });
+        } else {
+          console.log("Unknown role:", role);
+        }
+      } else {
+        console.log("Unexpected response:", response.data);
+        setLoading(false);
+      }
+    } catch (err) {
+      console.log("Error", err);
+      setLoading(false);
+    }
+  };
 
-       if (userData.user.role === 2) {
-         navigation.navigate("Secretary", { userData });
-       } else {
-         navigation.navigate("Employee", { userData });
-       }
-     } else {
-       console.log("Unexpected response:", response.data);
-       setLoading(false);
-     }
-   } catch (err) {
-     console.log("Error", err);
-     setLoading(false);
-   }
- };
 
   return (
     <SafeAreaView className="flex-1 justify-center items-center">
-    
       <Modal transparent={true} visible={loading} animationType="fade">
         <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
           <ActivityIndicator size="large" color="#09A214" />
           <Text className="text-white mt-4">Logging in...</Text>
         </View>
       </Modal>
-         
+
       <View className="flex-row w-full h-full">
         <View className="flex-1 justify-center items-center border">
           <View className="w-4/5 mb-5">
