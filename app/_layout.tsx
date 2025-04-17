@@ -6,6 +6,7 @@ import { ApiUrlProvider } from "../UserContext/API";
 import LoginScreen from "./Login/login";
 import SecretaryPage from "./SecretaryPage/secretary";
 import EmployeePage from "./EmployeePage/employee";
+import PunchClock from "./SecretaryPage/PunchClock";
 
 const Drawer = createDrawerNavigator();
 
@@ -37,9 +38,15 @@ export default function RootLayout() {
         ) : (
           <>
             {userRole === 2 && (
-              <Drawer.Screen name="Secretary">
-                {(props) => <SecretaryPage {...props} />}
-              </Drawer.Screen>
+              <>
+                <Drawer.Screen name="Secretary">
+                  {(props) => <SecretaryPage {...props} />}
+                </Drawer.Screen>
+
+                <Drawer.Screen name="PunchClock">
+                  {(props) => <PunchClock {...props} />}
+                </Drawer.Screen>
+              </>
             )}
             {userRole === 1 && (
               <Drawer.Screen name="Employee" component={EmployeePage} />

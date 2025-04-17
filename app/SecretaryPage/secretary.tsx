@@ -17,12 +17,14 @@ const SecretaryPage = ({ navigation, route }: any) => {
   const { userData } = route.params || {};
 
   interface Employee {
+    profile: string | undefined;
     id: number;
     firstname: string;
     surname: string;
     email: string;
     jobTitle: string;
     employee_id: string;
+    profileImage: string; // Add this if the employee object contains an image URL
   }
 
   const [employeedata, setEmployeeData] = useState<Employee[]>([]);
@@ -59,17 +61,16 @@ const SecretaryPage = ({ navigation, route }: any) => {
 
   return (
     <SafeAreaView className="flex-1">
-      <View className="flex-1 flex-row bg-white">
+      <View className="flex-1 flex-row bg-[#f5f5f7]">
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Image
-            className="w-10 h-10 m-2"
+            className="w-8 h-8 m-2"
             source={require("../../assets/images/menu-bar.png")}
           />
         </TouchableOpacity>
 
         <View className="flex-1">
           <Text className="text-xl font-bold p-4">Employee Attendance</Text>
-
           {loading ? (
             <Text className="text-center text-gray-500">
               Loading employees...
@@ -79,7 +80,6 @@ const SecretaryPage = ({ navigation, route }: any) => {
               contentContainerStyle={{
                 flexDirection: "row",
                 flexWrap: "wrap",
-                justifyContent: "space-between",
                 paddingBottom: 16,
               }}
             >
@@ -87,21 +87,25 @@ const SecretaryPage = ({ navigation, route }: any) => {
                 <TouchableOpacity
                   key={item.id}
                   onPress={() =>
-                    navigation.navigate("secondscreen", { employee: item })
+                    navigation.navigate("PunchClock", { employee: item })
                   }
-                  className="bg-red-400 rounded-lg m-2 shadow-md w-[30%] aspect-square"
+                  className="bg-[#fff] rounded-lg m-2 shadow-md w-[30%] aspect-square"
                 >
-                  <View className="flex-1 items-start justify-center mb-2 rounded-lg bg-orange-300">
-                    {/* Optional icon or image here */}
+                  <View className="h-[50%] items-center justify-center mb-2 rounded-t-lg bg-[#888888]">
+                    <Image
+                      source={{ uri: item.profile }}
+                      className="w-full h-full"
+                      resizeMode="cover"
+                    />
                   </View>
-                  <View className="flex-1 justify-center p-4">
-                    <Text className="text-lg font-normal text-gray-800">
-                      Employee ID: {item.employee_id}
+                  <View className="flex-1 justify-center p-2">
+                    <Text className="text-sm font-normal text-[#7E7E7E]">
+                      Emp Id: {item.employee_id}
                     </Text>
-                    <Text className="text-lg font-bold text-blue-500">
-                      Name: {item.firstname} {item.surname}
+                    <Text className="text-lg font-normal text-[#1d1d1f]">
+                      {item.firstname} {item.surname}
                     </Text>
-                    <Text className="text-sm text-gray-600">
+                    <Text className="text-sm text-[#7E7E7E]">
                       Job Title: {item.jobTitle}
                     </Text>
                   </View>
