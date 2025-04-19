@@ -1,10 +1,11 @@
 {
   "expo": {
-    "name": "my-app",
-    "slug": "my-app",
+    "name": "FlyTrack",
+    "slug": "FlyTrack",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "myapp",
+    "icon": "./assets/images/adaptive-icon.png",
+    "scheme": "FlyTrack",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",

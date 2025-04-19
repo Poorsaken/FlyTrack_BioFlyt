@@ -7,18 +7,22 @@ import { useApiUrl } from "../../UserContext/API";
 const PunchClock = ({ navigation, route }: any) => {
   const apiUrl = useApiUrl();
   const { employee } = route.params || {};
-  const [timeIn, setTimeIn] = useState<string | null>(null); // State to store time in
-  const [timeOut, setTimeOut] = useState<string | null>(null); // State to store time out
+  const [timeIn, setTimeIn] = useState<string | null>(null); 
+  const [timeOut, setTimeOut] = useState<string | null>(null); 
+  const [breakNow, setBreak] = useState<string[] | null>(null); 
+  
 
-     useEffect(() => {
-       setTimeIn(null); // Reset timeIn when employee changes
-       getTimeIn();
-     }, [employee.employee_id]);
-     
-     useEffect(() => {
-       setTimeOut(null); 
-       getTimeOut();
-     }, [employee.employee_id]);
+  useEffect(() => {
+    if (!employee?.employee_id) return;
+
+    setTimeIn(null);
+    setTimeOut(null);
+    setBreak(null);
+
+    getTimeIn();
+    getTimeOut();
+    getBreak();
+  }, [employee?.employee_id]);
 
   console.log("params received from secretary page", employee);
 
@@ -32,7 +36,7 @@ const PunchClock = ({ navigation, route }: any) => {
       alert("Clocked in successfully!");
       console.log("clock in response:", response.data);
 
-      getTimeIn(); 
+      getTimeIn();
     } catch (err) {
       console.log("Error in clocking in", err);
     }
@@ -47,9 +51,28 @@ const PunchClock = ({ navigation, route }: any) => {
       alert("Clocked out successfully!");
       console.log("clock out response:", response.data);
 
-      getTimeOut(); // Fetch the time out after clocking out
+
+      getTimeOut();
     } catch (err) {
       console.log("Error in clocking out", err);
+    }
+  };
+
+  const handleBreak = async () => {
+    try {
+      const response = await axios.post(`${apiUrl}/api/attendance/break`, {
+        employee_id: employee.employee_id,
+      });
+
+      alert("Break recorded successfully!");
+      console.log("Break response:", response.data);
+
+      const breakValue = response.data.break_time || response.data.break_count; // Adjust based on API response
+      setBreak(breakValue); // Update the break state
+
+        getBreak();
+    } catch (err) {
+      console.log("Error in recording break", err);
     }
   };
 
@@ -60,9 +83,9 @@ const PunchClock = ({ navigation, route }: any) => {
       );
       console.log("Full Time Out Response:", response.data);
 
-      const timeOutValue = response.data.time_out; // Use the raw time from the response
+      const timeOutValue = response.data.time_out;
       if (timeOutValue) {
-        setTimeOut(timeOutValue); // Set the raw time in the state
+        setTimeOut(timeOutValue);
       } else {
         console.log("Time Out value not found in response");
       }
@@ -74,31 +97,49 @@ const PunchClock = ({ navigation, route }: any) => {
     }
   };
 
- const getTimeIn = async () => {
-   try {
-     const response = await axios.get(
-       `${apiUrl}/api/attendance/in/${employee.employee_id}`
-     );
+  const getTimeIn = async () => {
+    try {
+      const response = await axios.get(
+        `${apiUrl}/api/attendance/in/${employee.employee_id}`
+      );
 
-     console.log("Full Time In Response:", response.data);
+      console.log("Full Time In Response:", response.data);
 
-     const timeInValue = response.data.time_in; 
-     if (timeInValue) {
-       setTimeIn(timeInValue); 
-     } else {
-       console.log("Time In value not found in response");
-     }
-   } catch (err) {
-     console.log(
-       "Error fetching time in",
-       (err as any).response?.data || (err as any).message
-     );
-   }
- };
+      const timeInValue = response.data.time_in;
+      if (timeInValue) {
+        setTimeIn(timeInValue);
+      } else {
+        console.log("Time In value not found in response");
+      }
+    } catch (err) {
+      console.log(
+        "Error fetching time in",
+        (err as any).response?.data || (err as any).message
+      );
+    }
+  };
 
+  const getBreak = async () => {
+    console.log("employee id", employee.employee_id);
+    try {
+      const response = await axios.get(
+        `${apiUrl}/api/attendance/break/${employee.employee_id}`
+      );
+      console.log("Full Break Response:", response.data);
 
-
-
+      const breakTimes = response.data.break_times;
+      if (breakTimes && breakTimes.length > 0) {
+        setBreak(breakTimes); // Save all break times
+      } else {
+        console.log("No break times found");
+      }
+    } catch (err) {
+      console.log(
+        "Error fetching break",
+        (err as any).response?.data || (err as any).message
+      );
+    }
+  };
 
 
   return (
@@ -112,7 +153,6 @@ const PunchClock = ({ navigation, route }: any) => {
           <Text className="text-[#09A214] px-2">Go Back</Text>
         </TouchableOpacity>
 
-        {/* Wrapper */}
         <View className="flex-1 flex-row my-2 space-x-2">
           <View className="flex-1 flex-row bg-white rounded-md p-2">
             <View className="w-[40%] bg-gray-500 rounded-md">
@@ -121,7 +161,11 @@ const PunchClock = ({ navigation, route }: any) => {
                 source={{ uri: employee.profile }}
               />
             </View>
-            <View className="flex-1 p-4">
+            <View className="flex-1 p-4 flex-col justify-evenly">
+              <Text className="text-[#B2B2B2] text-sm">
+                {employee.employee_id}
+              </Text>
+
               <Text className="text-[#B2B2B2]">Employee Name</Text>
               <Text className="text-[#1d1d1f] text-lg font-normal">
                 {employee.firstname} {employee.surname}
@@ -132,18 +176,40 @@ const PunchClock = ({ navigation, route }: any) => {
                 {employee.jobTitle}
               </Text>
 
-              {/* Display the time in value */}
-              <Text className="text-[#B2B2B2]">Time In</Text>
-              <Text className="text-[#1d1d1f] text-lg font-normal">
-                {timeIn || "Not clocked in"}
-              </Text>
-              <Text className="text-[#B2B2B2]">Time Out</Text>
-              <Text className="text-[#1d1d1f] text-lg font-normal">
-                {timeOut || "Not clocked out"}
-              </Text>
+              <View className="flex-row flex">
+                <View className="mr-5">
+                  <Text className="text-[#B2B2B2]">Start Time</Text>
+                  <Text className="text-green-600 text-sm font-normal">
+                    {timeIn || "Not clocked in"}
+                  </Text>
+                </View>
+
+                <View>
+                  <Text className="text-[#B2B2B2]">Time Out</Text>
+                  <Text className="text-red-600 text-sm font-normal">
+                    {timeOut || "Not clocked out"}
+                  </Text>
+                </View>
+              </View>
             </View>
           </View>
-          <View className="w-[40%] bg-white rounded-md"></View>
+          <View className="w-[40%] bg-white rounded-md p-4">
+            <Text className="text-[#B2B2B2]">Break Time</Text>
+            {breakNow && breakNow.length > 0 ? (
+              breakNow.map((time, index) => (
+                <Text
+                  key={index}
+                  className="text-[#1d1d1f] text-lg font-normal"
+                >
+                  {time}
+                </Text>
+              ))
+            ) : (
+              <Text className="text-[#1d1d1f] text-lg font-normal">
+                No breaks recorded
+              </Text>
+            )}
+          </View>
         </View>
 
         {/* Wrapper 2 */}
@@ -172,7 +238,7 @@ const PunchClock = ({ navigation, route }: any) => {
             </>
           )}
 
-          {timeOut ? (
+          {timeOut || !timeIn ? (
             <>
               <TouchableOpacity
                 className="flex-1 bg-[#FF0000] mx-2 rounded-lg justify-center items-center"
@@ -198,7 +264,10 @@ const PunchClock = ({ navigation, route }: any) => {
             </>
           )}
 
-          <TouchableOpacity className="flex-1 bg-[#FFA641] rounded-lg justify-center items-center">
+          <TouchableOpacity
+            className="flex-1 bg-[#FFA641] rounded-lg justify-center items-center"
+            onPress={() => handleBreak()}
+          >
             <Text className="text-center text-lg text-white">BREAK</Text>
           </TouchableOpacity>
         </View>
